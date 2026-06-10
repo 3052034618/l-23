@@ -32,7 +32,7 @@ const initialScores = {
 export default function ScorePanel() {
   const { recordId } = useParams<{ recordId: string }>();
   const navigate = useNavigate();
-  const { getRecord, calculateAndSetScore, records } = useAppStore();
+  const { calculateAndSetScore, records, generateRectifyTasksFromEvaluation } = useAppStore();
 
   const record = records.find((r) => r.id === recordId);
 
@@ -103,6 +103,7 @@ export default function ScorePanel() {
 
   const handleSaveAndNext = () => {
     calculateAndSetScore(record.id, tidiness, visibility, focusRatio);
+    generateRectifyTasksFromEvaluation(record.id);
     navigate(`/rectify/${record.id}`);
   };
 

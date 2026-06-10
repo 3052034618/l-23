@@ -31,6 +31,7 @@ interface AppState {
   addRectifyTask: (recordId: string, task: Omit<RectifyTask, 'id'>) => void;
   updateRectifyTask: (recordId: string, taskId: string, updates: Partial<RectifyTask>) => void;
   removeRectifyTask: (recordId: string, taskId: string) => void;
+  generateRectifyTasksFromEvaluation: (recordId: string) => void;
 
   filteredRecords: (filters: {
     dateRange?: { start: string; end: string };
@@ -196,8 +197,72 @@ export const useAppStore = create<AppState>()(
           ),
         })),
 
+      generateRectifyTasksFromEvaluation: (recordId) => {
+        const record = get().records.find((r) => r.id === recordId);
+        if (!record) throw new Error('Record not found');
+
+        const existingTaskDescriptions = new Set(record.rectifyTasks.map((t) => t.description));
+        const newTasks: Omit<RectifyTask, 'id'>[] = [];
+
+        record.outOfStockItems.forEach((item) => {
+          const description = `${item.description}，请及时补货`;
+          if (!existingTaskDescriptions.has(description)) {
+            newTasks.push({
+              description,
+              position: `货架位置 (${Math.round(item.x)}%, ${Math.round(item.y)}%)`,
+              severity: item.severity === 'high' ? 'urgent' : item.severity === 'medium' ? 'high' : 'medium',
+              status: 'pending',
+            });
+          }
+        });
+
+        record.priceTagChecks.forEach((check) => {
+          if (!check.checked) {
+            const description = `${check.name}未达标，请整改`;
+            if (!existingTaskDescriptions.has(description)) {
+              newTasks.push({
+                description,
+                position: '全场货架',
+                severity: 'high',
+                status: 'pending',
+              });
+            }
+          }
+        });
+
+        record.promoChecks.forEach((check) => {
+          if (!check.checked) {
+            const description = `${check.name}未达标，请整改`;
+            if (!existingTaskDescriptions.has(description)) {
+              newTasks.push({
+                description,
+                position: '促销区域',
+                severity: 'medium',
+                status: 'pending',
+              });
+            }
+          }
+        });
+
+        if (newTasks.length > 0) {
+          set((state) => ({
+            records: state.records.map((r) =>
+              r.id === recordId
+                ? {
+                    ...r,
+                    rectifyTasks: [
+                      ...r.rectifyTasks,
+                      ...newTasks.map((t) => ({ ...t, id: generateId() })),
+                    ],
+                  }
+                : r
+            ),
+          }));
+        }
+      },
+
       filteredRecords: (filters) => {
-        const { records } = get();
+        const { records, templates } = get();
         let result = [...records];
 
         if (filters.dateRange) {
@@ -211,7 +276,10 @@ export const useAppStore = create<AppState>()(
         }
 
         if (filters.category) {
-          result = result.filter((r) => r.storeCategory === filters.category);
+          result = result.filter((r) => {
+            const template = templates.find((t) => t.id === r.templateId);
+            return template?.category === filters.category;
+          });
         }
 
         if (filters.scoreLevel) {

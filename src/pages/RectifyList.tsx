@@ -47,6 +47,9 @@ export default function RectifyList() {
 
   const filteredTasks = record?.rectifyTasks.filter((task) => {
     if (filterStatus === 'all') return true;
+    if (filterStatus === 'completed') {
+      return task.status === 'completed' || task.status === 'reviewed';
+    }
     return task.status === filterStatus;
   }).sort((a, b) => {
     const severityOrder = { urgent: 0, high: 1, medium: 2, low: 3 };

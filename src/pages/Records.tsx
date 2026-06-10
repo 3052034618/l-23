@@ -16,12 +16,11 @@ import {
 import Header from '@/components/Header';
 import { useAppStore } from '@/store/useAppStore';
 import { getLevelText, getLevelColor, getLevelBgColor } from '@/utils/scoreUtils';
-import { categories } from '@/data/mockData';
 import type { ScoreLevel } from '@/types';
 
 export default function Records() {
   const navigate = useNavigate();
-  const { records, stores } = useAppStore();
+  const { stores, templates, filteredRecords: getFilteredRecords } = useAppStore();
 
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [selectedStore, setSelectedStore] = useState<string>('all');
@@ -32,32 +31,23 @@ export default function Records() {
     end: '',
   });
 
+  const templateCategories = useMemo(() => {
+    const categorySet = new Set(templates.map((t) => t.category));
+    return Array.from(categorySet);
+  }, [templates]);
+
   const filteredRecords = useMemo(() => {
-    let result = [...records];
+    return getFilteredRecords({
+      dateRange: dateRange.start && dateRange.end ? dateRange : undefined,
+      storeId: selectedStore !== 'all' ? selectedStore : undefined,
+      category: selectedCategory !== 'all' ? selectedCategory : undefined,
+      scoreLevel: selectedLevel !== 'all' ? selectedLevel : undefined,
+    });
+  }, [getFilteredRecords, selectedStore, selectedCategory, selectedLevel, dateRange]);
 
-    if (dateRange.start) {
-      result = result.filter((r) => r.visitDate >= dateRange.start);
-    }
-    if (dateRange.end) {
-      result = result.filter((r) => r.visitDate <= dateRange.end);
-    }
-
-    if (selectedStore !== 'all') {
-      result = result.filter((r) => r.storeId === selectedStore);
-    }
-
-    if (selectedCategory !== 'all') {
-      result = result.filter((r) => r.storeCategory === selectedCategory);
-    }
-
-    if (selectedLevel !== 'all') {
-      result = result.filter((r) => r.score.level === selectedLevel);
-    }
-
-    return result.sort(
-      (a, b) => new Date(b.visitDate).getTime() - new Date(a.visitDate).getTime()
-    );
-  }, [records, selectedStore, selectedCategory, selectedLevel, dateRange]);
+  const getTemplateCategory = (templateId: string) => {
+    return templates.find((t) => t.id === templateId)?.category || '未分类';
+  };
 
   const hasActiveFilters =
     selectedStore !== 'all' ||
@@ -192,7 +182,7 @@ export default function Records() {
                             </h3>
                             <div className="flex items-center gap-2 mt-1">
                               <span className="tag tag-primary">
-                                {record.storeCategory}
+                                {getTemplateCategory(record.templateId)}
                               </span>
                               <span
                                 className={`tag ${getLevelBgColor(record.score.level)} ${getLevelColor(record.score.level)}`}
@@ -311,7 +301,7 @@ export default function Records() {
                   品类
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {['all', ...categories].map((cat) => (
+                  {['all', ...templateCategories].map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}

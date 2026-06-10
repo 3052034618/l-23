@@ -24,7 +24,7 @@ export default function ShelfEvaluate() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const photoContainerRef = useRef<HTMLDivElement>(null);
 
-  const { stores, templates, addOutOfStock, removeOutOfStock, updatePriceTagChecks, updatePromoChecks, createRecord, records } = useAppStore();
+  const { stores, templates, addOutOfStock, removeOutOfStock, updatePriceTagChecks, updatePromoChecks, createRecord, updateRecord, records } = useAppStore();
 
   const store = stores.find((s) => s.id === id);
   const existingRecord = records.find((r) => r.storeId === id && r.visitDate === new Date().toISOString().split('T')[0]);
@@ -117,20 +117,24 @@ export default function ShelfEvaluate() {
     let recordId: string;
     if (existingRecord) {
       recordId = existingRecord.id;
+      updateRecord(recordId, {
+        shelfPhoto,
+        templateId: selectedTemplate,
+        outOfStockItems: [...outOfStockItems],
+        priceTagChecks: [...priceTagChecks],
+        promoChecks: [...promoChecks],
+      });
     } else if (shelfPhoto) {
       const newRecord = createRecord(store.id, shelfPhoto, selectedTemplate);
       recordId = newRecord.id;
-    } else {
-      alert('请先上传货架照片');
-      return;
-    }
-
-    if (!existingRecord) {
       outOfStockItems.forEach((item) => {
         addOutOfStock(recordId, { x: item.x, y: item.y, description: item.description, severity: item.severity });
       });
       updatePriceTagChecks(recordId, priceTagChecks);
       updatePromoChecks(recordId, promoChecks);
+    } else {
+      alert('请先上传货架照片');
+      return;
     }
 
     navigate(`/score/${recordId}`);
