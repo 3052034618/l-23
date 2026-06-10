@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 shadow-sm hover:shadow-md active:scale-95;
+  }
+  
+  .btn-secondary {
+    @apply bg-white text-primary-600 border border-primary-200 hover:bg-primary-50 focus:ring-primary-300;
+  }
+  
+  .btn-accent {
+    @apply bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-400 shadow-sm hover:shadow-md active:scale-95;
+  }
+  
+  .btn-danger {
+    @apply bg-danger text-white hover:bg-red-600 focus:ring-red-300;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-card hover:shadow-card-hover transition-shadow duration-300 overflow-hidden;
+  }
+  
+  .input {
+    @apply w-full px-4 py-2 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
+  }
+  
+  .tag {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .tag-success {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .tag-warning {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+  
+  .tag-danger {
+    @apply bg-red-100 text-red-800;
+  }
+  
+  .tag-primary {
+    @apply bg-primary-100 text-primary-700;
+  }
+  
+  .tag-accent {
+    @apply bg-accent-100 text-accent-700;
+  }
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
